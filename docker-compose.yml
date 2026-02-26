@@ -1,0 +1,74 @@
+# WorldBox Studio AI — 로컬 개발용 Docker Compose
+# 사용: 프로젝트 루트에 .env 생성 후 (README의 환경 변수 구조 참고) docker compose up -d
+# 호스트/포트·URL은 .env 에서 읽습니다.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-worldbox}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-worldbox_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-worldbox}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # 포트 미노출: 백엔드가 Docker 네트워크 내 postgres:5432 로만 접속
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-worldbox}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    volumes:
+      - minio_data:/data
+    ports:
+      - "${MINIO_API_PORT:-19010}:9000"
+      - "${MINIO_CONSOLE_PORT:-19011}:9001"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-worldbox}:${POSTGRES_PASSWORD:-worldbox_secret}@postgres:5432/${POSTGRES_DB:-worldbox}
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-secret-key-change-in-production}
+      DEBUG: "true"
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:15200}
+    volumes:
+      - ./backend:/app
+    ports:
+      - "${BACKEND_PORT:-18200}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-http://localhost:18200}
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "${FRONTEND_PORT:-15200}:5173"
+    depends_on:
+      - backend
+    command: npm run dev
+
+volumes:
+  postgres_data:
+  minio_data:
