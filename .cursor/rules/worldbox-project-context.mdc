@@ -1,0 +1,32 @@
+---
+description: WorldBox Studio AI 기획·기술 문서 및 벤치마킹 참조 의무
+alwaysApply: true
+---
+
+# WorldBox Studio AI — 기획·참조 컨텍스트
+
+## 필수 참조 문서
+- **기획 사양서**: `docs/AI 세계관 창작 및 몰입형 롤플레잉 플랫폼 서비스 기획 사양서.md`
+- **기술 아키텍처**: `docs/기술_스택_및_아키텍처.md`
+- **벤치마킹**: `벤치마킹/` (특히 캐릭터 메모리즈 등 UI 레퍼런스)
+
+구현·설계·리팩터 시 위 문서의 요구사항·스택·ER·API 흐름과 일치하도록 유지한다.
+
+## 핵심 도메인 용어
+| 용어 | 의미 |
+|------|------|
+| **World** | 세계관(프로젝트) 최상위 단위. 폴더·캐릭터·문서의 컨테이너 |
+| **Character** | 노코드 페르소나. stats(듀얼 스탯), metadata(심화 메타데이터), 관계·스킬 보유 |
+| **Relationship** | 캐릭터 간 관계(스승/제자, 짝사랑, 적대, 혼인 등). 마인드맵 UI와 연동 |
+| **Skill** | TRPG 스킬. 마나 소모·system_effect 등. 채팅 시 액션 버튼으로 노출 |
+| **시스템 프롬프트 빌더** | Character + Relationship + Skill → LLM용 시스템 프롬프트 문자열 생성 (백엔드) |
+
+## 레이어 구분
+- **Editor UI**: 세계관 대시보드, 노코드 페르소나 에디터, 듀얼 스탯 차트, **캔버스 기반 관계도(마인드맵)**.
+- **Player UI**: 대화형 채팅, **@멘션**(캐릭터 소환), **스킬/액션 버튼**, 가독성(폰트/행간)·라이트/다크.
+- **Backend**: World/폴더/파일 계층, System Prompt Builder, TRPG GM 엔진(스탯·스킬 판정).
+
+새 화면·API·모델 추가 시 위 구분과 기획서의 UX 설명을 따른다.
+
+## 배포
+- **Docker** 기반 배포. Docker Compose로 frontend, backend, PostgreSQL, MinIO, ChromaDB(선택) 등 서비스를 컨테이너로 구성한다. 시크릿은 환경 변수·Docker secrets로 주입하며 저장소에 평문 커밋하지 않는다.

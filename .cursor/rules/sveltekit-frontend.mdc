@@ -1,0 +1,24 @@
+---
+description: SvelteKit·Tailwind·마인드맵 프론트엔드 규칙
+globs: "**/*.svelte,**/*.ts,**/src/**"
+alwaysApply: false
+---
+
+# 프론트엔드 (SvelteKit + Tailwind)
+
+## 스택
+- **SvelteKit**: 라우팅, SSR/SPA, API 호출. 반응형·PWA 타깃.
+- **Tailwind CSS**: 스타일. 기획서의 가독성(예: Pretendard, 20pt, 32pt 행간)·라이트/다크 모드 지원.
+- **마인드맵**: Svelvet 기반 캔버스. 캐릭터 노드·관계 엣지(relation_type) 편집.
+
+## 구조 원칙
+- Editor 영역과 Player 영역(채팅) 라우트·레이아웃 분리.
+- API 호출은 백엔드 DRF 엔드포인트만 사용. 응답 스키마는 기술 문서·백엔드 Serializer와 일치.
+- 폼 데이터(캐릭터 메타데이터, 듀얼 스탯, 관계 타입)는 기획서 필드명과 맞춰 JSON으로 전송.
+
+## UI 참조
+- `벤치마킹/캐릭터 메모리즈` 등 이미지: 캐릭터 카드·에디터 레이아웃 참고. 크로스 플랫폼·PWA 설치 경험 유지.
+
+## 채팅·플레이
+- @멘션: 입력 시 세계관 내 캐릭터 목록 팝업 → 선택 시 해당 캐릭터 대화 참여.
+- 스킬 버튼: 캐릭터 시트에 정의된 Skill을 채팅 하단 버튼으로 노출. 클릭 시 백엔드 GM 엔진과 연동(스탯·마나 판정).

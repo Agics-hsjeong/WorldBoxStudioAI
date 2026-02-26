@@ -1,0 +1,32 @@
+---
+description: Django·DRF 백엔드 및 DB·시스템 프롬프트 규칙
+globs: "**/*.py,backend/**"
+alwaysApply: false
+---
+
+# 백엔드 (Django + DRF)
+
+## 스택
+- **Django + DRF**: World/Character/Relationship/Skill CRUD, 인증, REST API.
+- **PostgreSQL**: RDB + JSONB(stats, metadata). 기술 문서의 모델 구조 준수.
+- **MinIO**: 이미지·아바타·레퍼런스 에셋. S3 호환 API 사용.
+
+## 핵심 모델 (docs/기술_스택_및_아키텍처.md 기준)
+- **World**: name, description. (created_at, updated_at, owner 등 공통 Mixin 권장)
+- **Character**: world FK, name, stats(JSONB), metadata(JSONB).
+- **Relationship**: source_character, target_character, relation_type, weight. unique_together (source, target, relation_type).
+- **Skill**: character FK, name, mana_cost, system_effect.
+
+## 시스템 프롬프트 빌더
+- `build_system_prompt(character)` 등: Character + Relationship + Skill 조회 후 하나의 시스템 프롬프트 문자열 생성.
+- 채팅 입장·@멘션 시 해당 캐릭터 기준으로 프롬프트 조립 → LangChain SystemMessage 등으로 LLM에 주입.
+
+## TRPG GM 엔진
+- 스킬 버튼 클릭 시: 스탯(지능, 마력 등)·mana_cost 검사 → 성공/실패·효과 계산 → AI에게 지문 생성 요청.
+
+## API 설계
+- REST 리소스: /worlds/, /worlds/:id/characters/, /characters/:id/relationships/, /characters/:id/skills/ 등 계층 유지.
+- 채팅·실시간은 WebSocket 또는 SSE 고려. 기획서의 즉각 난입·스킬 반응과 맞춘다.
+
+## 동시 접속·부하
+- 여러 사용자 동시 API 사용 전제. Gunicorn workers·DB connection pool, DRF Throttling 적용. LLM 호출은 비동기 또는 Celery/RQ 등 큐로 분리 검토. 기술 문서 "6. 동시 접속·부하 대응" 참조.

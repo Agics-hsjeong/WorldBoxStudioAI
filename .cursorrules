@@ -1,0 +1,28 @@
+# WorldBox Studio AI — 프로젝트 규칙
+
+## 프로젝트 정체성
+- **이름**: WorldBox Studio AI  
+- **목표**: 세계관(World) 단위의 인터랙티브 AI 샌드박스 플랫폼. 노코드로 캐릭터·관계도를 만들고, TRPG형 채팅으로 몰입형 롤플레잉을 제공.
+
+## 참조 의무 (구현·기획 시 반드시 준수)
+1. **docs/** — 기획서·기술 아키텍처 문서를 반드시 참조한다.
+   - `docs/AI 세계관 창작 및 몰입형 롤플레잉 플랫폼 서비스 기획 사양서.md` : 기능 요구사항, UX(대시보드/에디터/채팅/멘션/스킬 버튼), PWA.
+   - `docs/기술_스택_및_아키텍처.md` : 기술 스택, 레이어 구조, DB 설계(World, Character, Relationship, Skill), 시스템 프롬프트 빌드 흐름.
+2. **벤치마킹/** — UI/UX 참조용. `벤치마킹/캐릭터 메모리즈` 등 캐릭터 카드·에디터 레이아웃 참고.
+
+## 기술 스택 (선정 문서 기준)
+- **프론트**: SvelteKit, Tailwind CSS, 마인드맵은 Svelvet 기반 커스텀.
+- **백엔드**: Django, Django REST Framework (DRF).
+- **DB**: PostgreSQL (JSONB 활용), MinIO (이미지·에셋).
+- **AI**: LangChain + ChromaDB(벡터 DB) + LLM(OpenAI/Gemini).
+- **배포**: **Docker** (및 Docker Compose). 프론트·백엔드·PostgreSQL·MinIO·ChromaDB 등 서비스를 컨테이너로 구성하고, 운영/개발 환경 일관성을 유지한다.
+
+## 아키텍처 원칙
+- 클라이언트 ↔ 백엔드: REST API·WebSocket. API 계약을 명확히 하고 프론트는 API 기반으로만 연동.
+- 시각적 데이터(메타데이터, 듀얼 스탯) → 백엔드에서 JSON/시스템 프롬프트로 변환. 프론트는 구조화된 폼 데이터만 전송.
+- 관계도(마인드맵) 데이터는 RDB(Relationship 모델)에 저장하고, AI 컨텍스트·RAG와 연동.
+
+## 코딩·협업
+- 새 기능 구현 시 기획서에 해당 기능이 정의되어 있는지 확인하고, 없으면 docs에 명시된 패턴(예: World → Character → Relationship, 시스템 프롬프트 빌더)에 맞춘다.
+- 사용자 요청이 기획/기술 문서와 충돌할 경우, 문서 내용을 우선하고 필요 시 문서 수정을 제안한다.
+- 응답은 **한국어**로 작성한다.
